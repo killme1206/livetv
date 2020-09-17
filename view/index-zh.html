@@ -11,6 +11,7 @@
       <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
     <![endif]-->
     <link href="/assert/css/index.css" rel="stylesheet">
+
   </head>
   <body>
     <div class="container">
@@ -39,6 +40,20 @@
             <button type="submit" class="btn btn-default">添加頻道</button>
           </form>
         </div>
+        <div class="gray-line">&nbsp;</div>
+
+        <div class="panel-body">
+          <form role="form" action="/api/newchannelText" method="POST">
+            <div class="form-group">
+              <label for="inputChannelName">批量添加(name,y2burl 换行)</label>
+              <textarea rows="10" type="text" class="form-control" id="inputChannelText" name="inputChannelText" placeholder="名字,链接&#10;名字,链接"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-default">添加</button>
+          </form>
+        </div>
+        <div id="copyArea"></div>
+
         <table class="table table-striped table-condensed">
           <tr>
               <th>#</th>
@@ -46,16 +61,29 @@
               <th>直播URL</th>
               <th>M3U8檔案URL</th>
               <th>代理直播數據流</th>
-              <th></th>
+              <th>
+                <a id="copyAll"><span class="glyphicon glyphicon-copy" aria-hidden="true"></span></a>
+              </th>
           </tr>
           {{range .Channels}}
           <tr>
               <td>{{.ID}}</td>
               <td>{{.Name}}</td>
               <td>{{.URL}}</td>
-              <td>{{.M3U8}}</td>
+              <td>
+                {{ if ne .ID  0 }} {{.M3U8}}  {{ end }}
+                {{ if eq .ID  0 }}  <a target="_blank" href="{{.M3U8}}">{{.M3U8}}</a> {{ end }}
+              </td>
               <td>{{ if .Proxy }}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{{ end }}</td>
-              <td><a href="/api/delchannel?id={{.ID}}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+              <td>
+                {{ if ne .ID  0 }}
+                <a href="/api/delchannel?id={{.ID}}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+                {{ end }}
+              </td>
+            {{ if ne .ID  0 }}
+            <span class="copyData hidden">{{.Name}},{{.M3U8}}</span>
+            {{ end }}
+
           </tr>
           {{end}}
         </table>
@@ -126,12 +154,24 @@
         <a href="/api/logout">Logout.</a>
       </footer>
     </div>
+
     <script src="/assert/js/jquery.min.js"></script>
     <script src="/assert/js/bootstrap.min.js"></script>
     <script src="/assert/js/bootbox.all.min.js"></script>
     <script>
       $("#auto-fill-button").click(function(){
           $("#inputBaseURL").val(window.location.protocol + "//" + window.location.host)
+      });
+      $("#copyAll").click(function () {
+        var value = "";
+        $(".copyData").each(function () {
+            value = value + $(this).text() +"\r\n";
+        });
+        console.log(value);
+        $("#inputChannelText").val(value);
+        $("#inputChannelText").select();
+        document.execCommand('Copy', false, null);
+        $("#inputChannelText").val("");
       });
       $("#allow-edit-button-cmd,#allow-edit-button-args").click(function(){
         bootbox.confirm({

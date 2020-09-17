@@ -105,7 +105,42 @@ func loadConfig() (Config, error) {
 	}
 	return conf, nil
 }
+func NewChannelTextHandler(c *gin.Context) {
+	if sessions.Default(c).Get("logined") != true {
+		c.Redirect(http.StatusFound, "/login")
+	}
+	text := c.PostForm("inputChannelText")
+	if text == "" {
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+	lines := strings.Split(text, "\n")
+	for _, value := range lines {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		vvs := strings.Split(value, ",")
+		if len(vvs) != 2 {
+			continue
+		}
+		mch := model.Channel{
+			Name:  vvs[0],
+			URL:   vvs[1],
+			Proxy: true,
+		}
+		err := service.SaveChannel(mch)
+		if err != nil {
+			log.Println(err.Error())
+			c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+				"ErrMsg": err.Error(),
+			})
+			return
+		}
+	}
 
+	c.Redirect(http.StatusFound, "/")
+}
 func NewChannelHandler(c *gin.Context) {
 	if sessions.Default(c).Get("logined") != true {
 		c.Redirect(http.StatusFound, "/login")

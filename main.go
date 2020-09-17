@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"os/user"
 	"syscall"
 	"time"
 
@@ -22,18 +23,32 @@ import (
 )
 
 func main() {
+
 	rand.Seed(time.Now().UnixNano())
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Server listen", os.Getenv("LIVETV_LISTEN"))
 	log.Println("Server datadir", os.Getenv("LIVETV_DATADIR"))
 	logFile, err := os.OpenFile(os.Getenv("LIVETV_DATADIR")+"/livetv.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		log.Panicln(err)
+		log.SetOutput(io.MultiWriter(os.Stderr, os.Stdout))
+		log.Println(err)
+	} else {
+		log.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	}
-	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	err = global.InitDB(os.Getenv("LIVETV_DATADIR") + "/livetv.db")
 	if err != nil {
-		log.Panicf("init: %s\n", err)
+		log.Println(err)
+		user, err := user.Current()
+		if nil == err {
+			err = global.InitDB(user.HomeDir + "/livetv.db")
+			if err != nil {
+				log.Panicf("init: %s\n", err)
+			}
+		} else {
+			log.Panicf("init: %s\n", err)
+		}
+	} else {
+		err = global.InitDB(os.Getenv("LIVETV_DATADIR") + "/livetv.db")
 	}
 	log.Println("LiveTV starting...")
 	go service.LoadChannelCache()
