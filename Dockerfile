@@ -11,6 +11,6 @@ COPY --from=builder /go/src/github.com/zjyl1994/livetv/view ./view
 COPY --from=builder /go/src/github.com/zjyl1994/livetv/assert ./assert
 COPY --from=builder /go/src/github.com/zjyl1994/livetv/.env .
 COPY --from=builder /go/src/github.com/zjyl1994/livetv/livetv .
-EXPOSE 443
+EXPOSE 9000
 VOLUME ["/root/data"]
 CMD ["./livetv"]
