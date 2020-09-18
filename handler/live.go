@@ -29,7 +29,7 @@ func checkAndSetProxy(httpTransport *http.Transport) error {
 	//设置代理相关
 	proxyStr := global.GetProxy()
 	if proxyStr != "" {
-		if strings.Contains("socks", proxyStr) {
+		if strings.Contains(proxyStr, "socks") {
 			dialer, err := proxy.SOCKS5("tcp", strings.ReplaceAll(proxyStr, "socks5://", ""), nil, proxy.Direct)
 			if err != nil {
 				return err
@@ -130,9 +130,9 @@ func TsProxyHandler(c *gin.Context) {
 	}
 
 	httpTransport := &http.Transport{}
-	client := http.Client{Timeout: global.HttpClientTimeout}
 	err = checkAndSetProxy(httpTransport)
 
+	client := http.Client{Timeout: global.HttpClientTimeout, Transport: httpTransport}
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
