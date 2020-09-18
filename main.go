@@ -28,6 +28,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Server listen", os.Getenv("LIVETV_LISTEN"))
 	log.Println("Server datadir", os.Getenv("LIVETV_DATADIR"))
+	log.Println("PROXY", os.Getenv("PROXY"))
 	logFile, err := os.OpenFile(os.Getenv("LIVETV_DATADIR")+"/livetv.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.SetOutput(io.MultiWriter(os.Stderr, os.Stdout))

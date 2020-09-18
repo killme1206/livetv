@@ -1,6 +1,8 @@
 package global
 
 import (
+	_ "github.com/joho/godotenv/autoload"
+	"os"
 	"sync"
 	"time"
 
@@ -20,3 +22,7 @@ var (
 	URLCache          sync.Map
 	M3U8Cache         = cache.New(3*time.Second, 10*time.Second)
 )
+
+func GetProxy() string {
+	return os.Getenv("PROXY")
+}

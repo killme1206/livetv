@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/zjyl1994/livetv/global"
 	"github.com/zjyl1994/livetv/service"
 	"github.com/zjyl1994/livetv/util"
+	"golang.org/x/net/proxy"
 )
 
 func M3UHandler(c *gin.Context) {
@@ -22,6 +24,27 @@ func M3UHandler(c *gin.Context) {
 		return
 	}
 	c.Data(http.StatusOK, "application/vnd.apple.mpegurl", []byte(content))
+}
+func checkAndSetProxy(httpTransport *http.Transport) error {
+	//设置代理相关
+	proxyStr := global.GetProxy()
+	if proxyStr != "" {
+		if strings.Contains("socks", proxyStr) {
+			dialer, err := proxy.SOCKS5("tcp", strings.ReplaceAll(proxyStr, "socks5://", ""), nil, proxy.Direct)
+			if err != nil {
+				return err
+			}
+			httpTransport.Dial = dialer.Dial
+		} else {
+			proxyStr := global.GetProxy()
+			proxyURL, err := url.Parse(proxyStr)
+			if err != nil {
+				return err
+			}
+			httpTransport.Proxy = http.ProxyURL(proxyURL)
+		}
+	}
+	return nil
 }
 
 func LiveHandler(c *gin.Context) {
@@ -58,7 +81,17 @@ func LiveHandler(c *gin.Context) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		client := http.Client{Timeout: global.HttpClientTimeout}
+
+		httpTransport := &http.Transport{}
+
+		err = checkAndSetProxy(httpTransport)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		client := http.Client{Timeout: global.HttpClientTimeout, Transport: httpTransport}
+
 		resp, err := client.Get(liveM3U8)
 		if err != nil {
 			log.Println(err)
@@ -95,7 +128,17 @@ func TsProxyHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
+
+	httpTransport := &http.Transport{}
 	client := http.Client{Timeout: global.HttpClientTimeout}
+	err = checkAndSetProxy(httpTransport)
+
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	resp, err := client.Get(remoteURL)
 	if err != nil {
 		log.Println(err)
