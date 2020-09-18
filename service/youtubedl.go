@@ -18,7 +18,7 @@ func GetYoutubeLiveM3U8(youtubeURL string) (string, error) {
 		liveURL, err := RealGetYoutubeLiveM3U8(youtubeURL)
 		if err != nil {
 			log.Println(err)
-			log.Println("[YTDL]",liveURL)
+			log.Println("[YTDL]", liveURL)
 			return "", err
 		} else {
 			global.URLCache.Store(youtubeURL, liveURL)
@@ -38,6 +38,11 @@ func RealGetYoutubeLiveM3U8(youtubeURL string) (string, error) {
 		log.Println(err)
 		return "", err
 	}
+	proxyStr := global.GetProxy()
+	if proxyStr != "" {
+		YtdlArgs = " --proxy " + proxyStr + " " + YtdlArgs
+	}
+
 	ytdlArgs := strings.Fields(YtdlArgs)
 	for i, v := range ytdlArgs {
 		if strings.EqualFold(v, "{url}") {
