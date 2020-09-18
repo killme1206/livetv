@@ -5,6 +5,14 @@ COPY . .
 RUN GOPROXY="https://goproxy.io" GO111MODULE=on go build -o livetv .
 
 FROM balenalib/aarch64-alpine-golang:latest
+
+RUN data="" \
+&& for s in $(wget -qO- http://mirrors.aliyun.com/alpine/MIRRORS.txt); do t=$(time -f "%E" wget -T1 -q $s/MIRRORS.txt -O /dev/null 2>&1) && echo "$s was $t" && data="$data$t $s\n"; done \
+&& echo -e $data | sort \
+&& newrepo=`echo -e $data | sort | head -2 | tail -1 | awk '{print $3}'` \
+&& repo=${newrepo//\//\\/} \
+&& sed -i 's/http:\/\/dl-cdn.alpinelinux.org\/alpine\//'"$repo"'/g' /etc/apk/repositories
+
 RUN apk --no-cache add ca-certificates youtube-dl tzdata libc6-compat libgcc libstdc++
 WORKDIR /root
 COPY --from=builder /go/src/github.com/zjyl1994/livetv/view ./view
