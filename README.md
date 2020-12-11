@@ -1,23 +1,18 @@
 # LiveTV
 Use Youtube live as IPTV feeds
 
-## Install 
+## Install local
+```
+#git clone https://github.com/linsongze/livetv.git
 
-First you need to install Docker, Centos7 users can directly use the following tutorials. [How To Install and Use Docker on CentOS 7](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-centos-7)
+#cd livetv 
 
-After installing Docker, you can enable LiveTV! on your local port 9500 with the following command:
+#docker build . -f Dockerfile_Centos -t linsz/livetv
 
-`docker run -d -p9500:9000 zjyl1994/livetv:1.0`
+#docker run -d -p9500:9000  linsz/livetv
 
-The data file is stored inside the container in the `/root/data` directory, so it is recommended to use the -v command to map this directory to the host's directory.
+```
 
-An example of using an external storage directory is shown below.
-
-`docker run -d -p9500:9000 -v/mnt/data/livetv:/root/data zjyl1994/livetv:1.1`
-
-This will open a LiveTV! container on port 9500 that uses the `/mnt/data/livetv` directory as storage.
-
-PS: If you do not specify an external storage directory, LiveTV! will not be able to read the previous configuration file when it reboots.
 
 ## Install kintohub
 1、注册kintohub账号
