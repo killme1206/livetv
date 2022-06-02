@@ -78,7 +78,7 @@ func IndexHandler(c *gin.Context) {
 	if langTag == language.Chinese {
 		templateFilename = "index-zh.html"
 	} else {
-		templateFilename = "index.html"
+		templateFilename = "index-zh.html"
 	}
 	c.HTML(http.StatusOK, templateFilename, gin.H{
 		"Channels": channels,
