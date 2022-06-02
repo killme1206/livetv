@@ -110,6 +110,7 @@ func NewChannelTextHandler(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/login")
 	}
 	text := c.PostForm("inputChannelText")
+	chProxy := c.PostForm("proxy") != ""
 	if text == "" {
 		c.Redirect(http.StatusFound, "/")
 		return
@@ -127,7 +128,7 @@ func NewChannelTextHandler(c *gin.Context) {
 		mch := model.Channel{
 			Name:  vvs[0],
 			URL:   vvs[1],
-			Proxy: true,
+			Proxy: chProxy,
 		}
 		err := service.SaveChannel(mch)
 		if err != nil {
