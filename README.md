@@ -14,6 +14,8 @@ Use Youtube live as IPTV feeds
 ```
 
 
+python版本(https://github.com/linsongze/pylivetv)
+
 
 ## Usage
 
